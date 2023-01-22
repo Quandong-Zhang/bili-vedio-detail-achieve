@@ -62,13 +62,15 @@ def save_region_all_list(rid):
         sleep(WEB_ACHIEVE_LIMIT)
 
 if __name__ == "__main__":
-    if len(sys.argv) == 1:
-        logger.info("No arguments, exiting...")
-        sys.exit()
-    elif sys.argv[1] == "user":
-        save_user_all_list(sys.argv[2])
-    elif sys.argv[1] == "region":
-        save_region_all_list(sys.argv[2])
-    else:
-        logger.info("Unknown arguments, exiting...")
-        sys.exit()
+    cfg = json.loads(open("cfg.json", "r").read())
+    while True:
+        try:
+            for mid in cfg["users"]:
+                logger.info("user mid: %s", mid)
+                save_user_all_list(mid)
+            for rid in cfg["rids"]:
+                logger.info("rid: %s", rid)
+                save_region_all_list(rid)
+        except Exception as e:
+            logger.error("Exception: %s", e)
+            sleep(150)
