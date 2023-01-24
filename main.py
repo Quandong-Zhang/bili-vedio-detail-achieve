@@ -5,17 +5,19 @@ import requests
 import json
 import logging
 from time import sleep
+import time
 
 VERSION = "0.0.1"
 UA = "Bilibili vedio detail saver {VERSION}"
 GLOBE_SLEEP_TIME = 0
-WEB_ACHIEVE_LIMIT = 30
+WEB_ACHIEVE_LIMIT = 35
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 logger.info("Bilibili vedio detail saver {VERSION} started".format(VERSION=VERSION))
 
 def save_vedio_detail(bvid):
+    logging.info("start to save {bvid} neary done,send saving requests...")
     save_obj = waybackpy.WaybackMachineSaveAPI("https://api.bilibili.com/x/web-interface/view?bvid={bvid}".format(bvid=bvid), UA)
     return save_obj.save()
 
@@ -62,15 +64,18 @@ def save_region_all_list(rid):
         sleep(WEB_ACHIEVE_LIMIT)
 
 if __name__ == "__main__":
+    last_update_favor_time = 0
     cfg = json.loads(open("cfg.json", "r").read())
     while True:
         try:
-            for mid in cfg["users"]:
-                logger.info("user mid: %s", mid)
-                save_user_all_list(mid)
             for rid in cfg["rids"]:
                 logger.info("rid: %s", rid)
                 save_region_all_list(rid)
+            if int(time.time) - last_update_favor_time >= 3*24*60*60:
+                for mid in cfg["users"]:
+                    logger.info("user's mid: %s", mid)
+                    save_user_all_list(mid)
+                last_update_favor_time = int(time.time)
         except Exception as e:
             logger.error("Exception: %s", e)
             sleep(150)
